@@ -1,28 +1,19 @@
 #[macro_use]
 extern crate log;
 
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use anyhow::Result;
 use dotenv::dotenv;
 use listenfd::ListenFd;
-use std::env;
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use sqlx::mssql::MssqlPool;
-use anyhow::Result;
+use std::env;
 
 // import todo module (routes and model)
 mod todo;
 
 // default / handler
 async fn index() -> impl Responder {
-    HttpResponse::Ok().body(r#"
-        Welcome to Actix-web with SQLx Todos example.
-        Available routes:
-        GET /todos -> list of all todos
-        POST /todo -> create new todo, example: { "description": "learn actix and sqlx", "done": false }
-        GET /todo/{id} -> show one todo with requested id
-        PUT /todo/{id} -> update todo with requested id, example: { "description": "learn actix and sqlx", "done": true }
-        DELETE /todo/{id} -> delete todo with requested id
-    "#
-    )
+    HttpResponse::NotFound()
 }
 
 #[actix_web::main]
