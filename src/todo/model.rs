@@ -1,7 +1,5 @@
 use serde::{Serialize, Deserialize};
-use actix_web::{HttpResponse, HttpRequest, Responder, Error};
-use futures::future::{ready, Ready};
-use sqlx::{MssqlPool, FromRow, Row};
+use sqlx::{MssqlPool, FromRow, Row, Done};
 use sqlx::mssql::MssqlRow;
 use anyhow::Result;
 
@@ -18,22 +16,6 @@ pub struct Todo {
     pub id: i32,
     pub description: String,
     pub done: bool,
-}
-
-// implementation of Actix Responder for Todo struct so we can return Todo from action handler
-impl Responder for Todo {
-    type Error = Error;
-    type Future = Ready<Result<HttpResponse, Error>>;
-
-    fn respond_to(self, _req: &HttpRequest) -> Self::Future {
-        let body = serde_json::to_string(&self).unwrap();
-        // create response and set content type
-        ready(Ok(
-            HttpResponse::Ok()
-                .content_type("application/json")
-                .body(body)
-        ))
-    }
 }
 
 // Implementation for Todo struct, functions for read/write/update and delete todo from database
@@ -78,53 +60,31 @@ impl Todo {
         })
     }
 
-    pub async fn create(todo: TodoRequest, pool: &MssqlPool) -> Result<Todo> {
-        let mut tx = pool.begin().await?;
-        let todo = sqlx::query("INSERT INTO todos (description, done) VALUES ($1, $2) RETURNING id, description, done")
+    pub async fn create(todo: TodoRequest, pool: &MssqlPool) -> Result<i32> {
+        let new_id = sqlx::query("INSERT INTO todos (description, done) VALUES ($1, $2) RETURNING id")
             .bind(&todo.description)
             .bind(todo.done)
-            .map(|row: MssqlRow| {
-                Todo {
-                    id: row.get(0),
-                    description: row.get(1),
-                    done: row.get(2)
-                }
-            })
-            .fetch_one(&mut tx)
+            .map(|row: MssqlRow| row.get(0))
+            .fetch_one(&*pool)
             .await?;
-
-        tx.commit().await?;
-        Ok(todo)
+        Ok(new_id)
     }
 
-    pub async fn update(id: i32, todo: TodoRequest, pool: &MssqlPool) -> Result<Todo> {
-        let mut tx = pool.begin().await.unwrap();
-        let todo = sqlx::query("UPDATE todos SET description = $1, done = $2 WHERE id = $3 RETURNING id, description, done")
+    pub async fn update(id: i32, todo: TodoRequest, pool: &MssqlPool) -> Result<u64> {
+        let updated = sqlx::query("UPDATE todos SET description = $1, done = $2 WHERE id = $3")
             .bind(&todo.description)
             .bind(todo.done)
             .bind(id)
-            .map(|row: MssqlRow| {
-                Todo {
-                    id: row.get(0),
-                    description: row.get(1),
-                    done: row.get(2)
-                }
-            })
-            .fetch_one(&mut tx)
+            .execute(&*pool)
             .await?;
-
-        tx.commit().await.unwrap();
-        Ok(todo)
+        Ok(updated.rows_affected())
     }
 
     pub async fn delete(id: i32, pool: &MssqlPool) -> Result<u64> {
-        let mut tx = pool.begin().await?;
         let deleted = sqlx::query("DELETE FROM todos WHERE id = $1")
             .bind(id)
-            .execute(&mut tx)
+            .execute(&*pool)
             .await?;
-
-        tx.commit().await?;
-        Ok(deleted)
+        Ok(deleted.rows_affected())
     }
 }
