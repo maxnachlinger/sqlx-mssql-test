@@ -27,9 +27,9 @@ checksum = "4d25d88fd6b8041580a654f9d0c581a047baee2b3efee13275f2fc392fc75034"
 
 [[package]]
 name = "atoi"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0afb7287b68575f5ca0e5c7e40191cbd4be59d325781f46faa603e176eaef47"
+checksum = "5c897df197d57c25b37df9d8fa2f93ddbfeee9ebd2264350ac79c8ec4b795885"
 dependencies = [
  "num-traits",
 ]

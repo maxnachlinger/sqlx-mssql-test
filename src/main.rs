@@ -11,7 +11,7 @@ async fn main() -> Result<(), sqlx::Error> {
 
     let pool = MssqlPool::connect_with(options).await?;
 
-    let row: (i32,String) = sqlx::query_as("SELECT id, name FROM test_table")
+    let row: (i32,String) = sqlx::query_as("SELECT id, name FROM test_table WHERE id = 1")
         .fetch_one(&pool).await?;
 
     dbg!(row);

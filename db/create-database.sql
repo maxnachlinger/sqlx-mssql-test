@@ -32,6 +32,9 @@ GO
 ALTER TABLE test_table ADD CONSTRAINT [PK_test_table] PRIMARY KEY CLUSTERED ([id] ASC)
 GO
 
-INSERT INTO test_table
-SELECT GETDATE(), GETDATE(), 'test name', 10.11
+INSERT INTO test_table ([createdAt],[updatedAt],[name],[amount]) VALUES (GETDATE(), GETDATE(), 'test name 1', 1.0);
+INSERT INTO test_table ([createdAt],[updatedAt],[name],[amount]) VALUES (GETDATE(), GETDATE(), 'test name 2', 1.0);
+INSERT INTO test_table ([createdAt],[updatedAt],[name],[amount]) VALUES (GETDATE(), GETDATE(), 'test name 3', 1.0);
+INSERT INTO test_table ([createdAt],[updatedAt],[name],[amount]) VALUES (GETDATE(), GETDATE(), 'test name 4', 1.0);
+INSERT INTO test_table ([createdAt],[updatedAt],[name],[amount]) VALUES (GETDATE(), GETDATE(), 'test name 5', 1.0);
 GO
