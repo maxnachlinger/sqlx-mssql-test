@@ -18,20 +18,17 @@ GO
 ALTER ROLE db_owner ADD MEMBER test;
 GO
 
-CREATE TABLE test_table
+CREATE TABLE todos
 (
    [id] int IDENTITY(1, 1)  NOT NULL,
-   [createdAt] datetime2  NOT NULL,
-   [updatedAt] datetime2  NOT NULL,
-   [name] varchar(150)  NOT NULL,
-   [amount] decimal(15, 2)  NULL
+   [description] varchar(500)  NOT NULL,
+   [done] bit NOT NULL
 )
 WITH (DATA_COMPRESSION = NONE)
 GO
 
-ALTER TABLE test_table ADD CONSTRAINT [PK_test_table] PRIMARY KEY CLUSTERED ([id] ASC)
+ALTER TABLE todos ADD CONSTRAINT [PK_todos] PRIMARY KEY CLUSTERED ([id] ASC)
 GO
 
-INSERT INTO test_table
-SELECT GETDATE(), GETDATE(), 'test name', 10.11
+INSERT INTO todos ([description], [done]) VALUES ('test 1', 0);
 GO
