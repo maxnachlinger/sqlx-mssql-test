@@ -1,0 +1,6 @@
+version: "3.8"
+services:
+  db:
+    build: ./db
+    ports:
+      - "1433:1433"
