@@ -1,13 +1,13 @@
-use serde::{Serialize, Deserialize};
-use sqlx::{MssqlPool, FromRow, Row, Done};
-use sqlx::mssql::MssqlRow;
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
+use sqlx::mssql::MssqlRow;
+use sqlx::{Done, FromRow, MssqlPool, Row};
 
 // this struct will use to receive user input
 #[derive(Serialize, Deserialize)]
 pub struct TodoRequest {
     pub description: String,
-    pub done: bool
+    pub done: bool,
 }
 
 // this struct will be used to represent database record
@@ -22,21 +22,24 @@ pub struct Todo {
 impl Todo {
     pub async fn find_all(pool: &MssqlPool) -> Result<Vec<Todo>> {
         let mut todos = vec![];
-        let recs = sqlx::query!(
+        let results = sqlx::query!(
             r#"
-                SELECT id, description, done
-                    FROM todos
-                ORDER BY id
+                SELECT 
+                  t.id, 
+                  t.description, 
+                  t.done
+                FROM todos t
+                ORDER BY t.id
             "#
         )
-            .fetch_all(pool)
-            .await?;
+        .fetch_all(pool)
+        .await?;
 
-        for rec in recs {
+        for result in results {
             todos.push(Todo {
-                id: rec.id,
-                description: rec.description,
-                done: rec.done
+                id: result.id,
+                description: result.description,
+                done: result.done,
             });
         }
 
@@ -44,54 +47,75 @@ impl Todo {
     }
 
     pub async fn find_by_id(id: i32, pool: &MssqlPool) -> Result<Todo> {
-        let rec = sqlx::query!(
-                r#"
-                    SELECT * FROM todos WHERE id = @p1
+        let result = sqlx::query!(
+            r#"
+                SELECT 
+                  t.id, 
+                  t.description, 
+                  t.done
+                FROM todos t
+                WHERE id = @p1
                 "#,
-                id
-            )
-            .fetch_one(&*pool)
-            .await?;
+            id
+        )
+        .fetch_one(&*pool)
+        .await?;
 
         Ok(Todo {
-            id: rec.id,
-            description: rec.description,
-            done: rec.done
+            id: result.id,
+            description: result.description,
+            done: result.done,
         })
     }
 
     pub async fn create(todo: TodoRequest, pool: &MssqlPool) -> Result<Todo> {
-        let rec = sqlx::query!(
-                r#"
-                    INSERT INTO todos (description, done) OUTPUT Inserted.ID AS id VALUES (@p1, @p2)
-                "#,
-                &todo.description,
-                &todo.done
-            )
-            .fetch_one(&*pool)
-            .await?;
+        let result = sqlx::query!(
+            r#"
+        INSERT INTO todos (description, done)
+        OUTPUT Inserted.ID AS id
+        VALUES (@p1, @p2)
+        "#,
+            &todo.description,
+            &todo.done
+        )
+        .fetch_one(&*pool)
+        .await?;
+
         Ok(Todo {
-            id: rec.id,
+            id: result.id,
             description: todo.description,
-            done: todo.done
+            done: todo.done,
         })
     }
 
     pub async fn update(id: i32, todo: TodoRequest, pool: &MssqlPool) -> Result<u64> {
-        let updated = sqlx::query("UPDATE todos SET description = @p1, done = @p2 WHERE id = @p3")
-            .bind(&todo.description)
-            .bind(todo.done)
-            .bind(id)
-            .execute(&*pool)
-            .await?;
-        Ok(updated.rows_affected())
+        let result = sqlx::query!(
+            r#"
+            UPDATE todos 
+            SET description = @p1, 
+            done = @p2 
+            WHERE id = @p3
+        "#,
+            &todo.description,
+            &todo.done,
+            &id
+        )
+        .execute(&*pool)
+        .await?;
+
+        Ok(result.rows_affected())
     }
 
     pub async fn delete(id: i32, pool: &MssqlPool) -> Result<u64> {
-        let deleted = sqlx::query("DELETE FROM todos WHERE id = @p1")
-            .bind(id)
-            .execute(&*pool)
-            .await?;
-        Ok(deleted.rows_affected())
+        let result = sqlx::query!(
+            r#"
+            DELETE FROM todos WHERE id = @p1
+        "#,
+            &id
+        )
+        .execute(&*pool)
+        .await?;
+
+        Ok(result.rows_affected())
     }
 }

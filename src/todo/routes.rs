@@ -2,12 +2,12 @@ use crate::todo::{Todo, TodoRequest};
 use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use sqlx::MssqlPool;
 
-#[get("/todos")]
+#[get("/todo")]
 async fn find_all(db_pool: web::Data<MssqlPool>) -> impl Responder {
     let result = Todo::find_all(db_pool.get_ref()).await;
     match result {
         Ok(todos) => HttpResponse::Ok().json(todos),
-        _ => HttpResponse::BadRequest().body("Error trying to read all todos from database")
+        _ => HttpResponse::BadRequest().body("Error trying to read all todos from database"),
     }
 }
 
@@ -16,7 +16,7 @@ async fn find(id: web::Path<i32>, db_pool: web::Data<MssqlPool>) -> impl Respond
     let result = Todo::find_by_id(id.into_inner(), db_pool.get_ref()).await;
     match result {
         Ok(todo) => HttpResponse::Ok().json(todo),
-        _ => HttpResponse::BadRequest().body("Todo not found")
+        _ => HttpResponse::BadRequest().body("Todo not found"),
     }
 }
 
@@ -25,16 +25,20 @@ async fn create(todo: web::Json<TodoRequest>, db_pool: web::Data<MssqlPool>) -> 
     let result = Todo::create(todo.into_inner(), db_pool.get_ref()).await;
     match result {
         Ok(new_todo) => HttpResponse::Ok().json(new_todo),
-        _ => HttpResponse::BadRequest().body("Error trying to create new todo")
+        _ => HttpResponse::BadRequest().body("Error trying to create new todo"),
     }
 }
 
 #[put("/todo/{id}")]
-async fn update(id: web::Path<i32>, todo: web::Json<TodoRequest>, db_pool: web::Data<MssqlPool>) -> impl Responder {
-    let result = Todo::update(id.into_inner(), todo.into_inner(),db_pool.get_ref()).await;
+async fn update(
+    id: web::Path<i32>,
+    todo: web::Json<TodoRequest>,
+    db_pool: web::Data<MssqlPool>,
+) -> impl Responder {
+    let result = Todo::update(id.into_inner(), todo.into_inner(), db_pool.get_ref()).await;
     match result {
         Ok(todo) => HttpResponse::Ok().json(todo),
-        _ => HttpResponse::BadRequest().body("Todo not found")
+        _ => HttpResponse::BadRequest().body("Todo not found"),
     }
 }
 
@@ -48,8 +52,8 @@ async fn delete(id: web::Path<i32>, db_pool: web::Data<MssqlPool>) -> impl Respo
             } else {
                 HttpResponse::BadRequest().body("Todo not found")
             }
-        },
-        _ => HttpResponse::BadRequest().body("Todo not found")
+        }
+        _ => HttpResponse::BadRequest().body("Todo not found"),
     }
 }
 
