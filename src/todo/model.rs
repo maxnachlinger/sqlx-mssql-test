@@ -46,7 +46,7 @@ impl Todo {
     pub async fn find_by_id(id: i32, pool: &MssqlPool) -> Result<Todo> {
         let rec = sqlx::query!(
                 r#"
-                    SELECT * FROM todos WHERE id = $1
+                    SELECT * FROM todos WHERE id = @p1
                 "#,
                 id
             )
@@ -60,18 +60,25 @@ impl Todo {
         })
     }
 
-    pub async fn create(todo: TodoRequest, pool: &MssqlPool) -> Result<i32> {
-        let new_id = sqlx::query("INSERT INTO todos (description, done) VALUES ($1, $2) RETURNING id")
-            .bind(&todo.description)
-            .bind(todo.done)
-            .map(|row: MssqlRow| row.get(0))
+    pub async fn create(todo: TodoRequest, pool: &MssqlPool) -> Result<Todo> {
+        let rec = sqlx::query!(
+                r#"
+                    INSERT INTO todos (description, done) OUTPUT Inserted.ID AS id VALUES (@p1, @p2)
+                "#,
+                &todo.description,
+                &todo.done
+            )
             .fetch_one(&*pool)
             .await?;
-        Ok(new_id)
+        Ok(Todo {
+            id: rec.id,
+            description: todo.description,
+            done: todo.done
+        })
     }
 
     pub async fn update(id: i32, todo: TodoRequest, pool: &MssqlPool) -> Result<u64> {
-        let updated = sqlx::query("UPDATE todos SET description = $1, done = $2 WHERE id = $3")
+        let updated = sqlx::query("UPDATE todos SET description = @p1, done = @p2 WHERE id = @p3")
             .bind(&todo.description)
             .bind(todo.done)
             .bind(id)
@@ -81,7 +88,7 @@ impl Todo {
     }
 
     pub async fn delete(id: i32, pool: &MssqlPool) -> Result<u64> {
-        let deleted = sqlx::query("DELETE FROM todos WHERE id = $1")
+        let deleted = sqlx::query("DELETE FROM todos WHERE id = @p1")
             .bind(id)
             .execute(&*pool)
             .await?;

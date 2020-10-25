@@ -29,6 +29,3 @@ GO
 
 ALTER TABLE todos ADD CONSTRAINT [PK_todos] PRIMARY KEY CLUSTERED ([id] ASC)
 GO
-
-INSERT INTO todos ([description], [done]) VALUES ('test 1', 0);
-GO

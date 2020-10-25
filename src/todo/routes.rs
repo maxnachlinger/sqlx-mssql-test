@@ -24,7 +24,7 @@ async fn find(id: web::Path<i32>, db_pool: web::Data<MssqlPool>) -> impl Respond
 async fn create(todo: web::Json<TodoRequest>, db_pool: web::Data<MssqlPool>) -> impl Responder {
     let result = Todo::create(todo.into_inner(), db_pool.get_ref()).await;
     match result {
-        Ok(todo) => HttpResponse::Ok().json(todo),
+        Ok(new_todo) => HttpResponse::Ok().json(new_todo),
         _ => HttpResponse::BadRequest().body("Error trying to create new todo")
     }
 }

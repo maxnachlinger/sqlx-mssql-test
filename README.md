@@ -6,3 +6,13 @@ To run:
 2. Give the scripts a few seconds to run to set things up :)
 3. `cargo run`
 4. Hit [http://127.0.0.1:8080/](http://127.0.0.1:8080/) in your browser.
+
+## API
+### Crete TODO
+```bash
+curl -v \
+-H 'content-type: application/json' \
+-d '{"description":"Create a simple POST/INSERT example curl","done":true}' \
+http://127.0.0.1:8080/todo
+```
+
