@@ -1,7 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use sqlx::mssql::MssqlRow;
-use sqlx::{Done, FromRow, MssqlPool, Row};
+use sqlx::{Done, FromRow, MssqlPool};
 
 // this struct will use to receive user input
 #[derive(Serialize, Deserialize)]
@@ -24,9 +23,9 @@ impl Todo {
         let mut todos = vec![];
         let results = sqlx::query!(
             r#"
-                SELECT 
-                  t.id, 
-                  t.description, 
+                SELECT
+                  t.id,
+                  t.description,
                   t.done
                 FROM todos t
                 ORDER BY t.id
@@ -49,9 +48,9 @@ impl Todo {
     pub async fn find_by_id(id: i32, pool: &MssqlPool) -> Result<Todo> {
         let result = sqlx::query!(
             r#"
-                SELECT 
-                  t.id, 
-                  t.description, 
+                SELECT
+                  t.id,
+                  t.description,
                   t.done
                 FROM todos t
                 WHERE id = @p1
@@ -91,9 +90,9 @@ impl Todo {
     pub async fn update(id: i32, todo: TodoRequest, pool: &MssqlPool) -> Result<u64> {
         let result = sqlx::query!(
             r#"
-            UPDATE todos 
-            SET description = @p1, 
-            done = @p2 
+            UPDATE todos
+            SET description = @p1,
+            done = @p2
             WHERE id = @p3
         "#,
             &todo.description,
