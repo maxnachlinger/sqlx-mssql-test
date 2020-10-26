@@ -1,5 +1,5 @@
 ## sqlx mssql test
-> Modified the [sqlx todo actix-web example](https://github.com/actix/examples/tree/master/sqlx_todo) to work with sql server.
+> Modified [sqlx todo actix-web example](https://github.com/actix/examples/tree/master/sqlx_todo) to work with sql server.
 
 To run:
 1. `docker-compose up -d`
